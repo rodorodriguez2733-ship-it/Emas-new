@@ -1,0 +1,3 @@
+Cambios: 1 barbero, espacios de 10 minutos y mensaje de WhatsApp preparado 5 minutos antes.
+IMPORTANTE: una web en iPhone no puede enviar WhatsApp automáticamente en segundo plano por sí sola. Para envío automático real necesitas WhatsApp Business API/Cloud API o un servicio como Make/Zapier.
+Para actualizar GitHub Pages, reemplaza index.html, manifest.webmanifest y sw.js por estos archivos.

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="EMA'S BARBER">
+<link rel="manifest" href="manifest.webmanifest"><title>EMA'S BARBER</title>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Arial;background:#fff;color:#222}
+header{position:sticky;top:0;background:#fff;border-bottom:1px solid #ddd;padding:12px;z-index:5}
+.logo{text-align:center;font-weight:900;font-size:27px;color:#d71920}.logo span{display:block;color:#222;font-size:14px;letter-spacing:7px;border-top:4px solid #29235c;border-bottom:4px solid #29235c;width:max-content;margin:auto}
+.toolbar{display:flex;gap:8px;align-items:center;margin-top:10px}.toolbar button{padding:8px 10px;border:1px solid #ccc;background:#fff;border-radius:9px}.date{flex:1;text-align:center;font-weight:700}
+.wrap{overflow:auto;height:calc(100vh - 120px)}table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed}
+th,td{border-right:1px solid #d1d5db;border-bottom:1px solid #d1d5db}th{position:sticky;top:0;background:#fafafa;height:42px;z-index:3}
+th:first-child,td:first-child{position:sticky;left:0;background:#eee;z-index:2;width:85px}td{height:38px}.time{text-align:center;font-size:11px;font-weight:700}.slot{padding:3px;vertical-align:top}
+.appt{background:#eef6ff;border-left:4px solid #0a84ff;border-radius:5px;padding:5px;font-size:12px}.appt b{display:block}
+.fab{position:fixed;right:18px;bottom:22px;width:56px;height:56px;border-radius:50%;border:0;background:#0a84ff;color:#fff;font-size:30px}
+dialog{border:0;border-radius:16px;width:min(92vw,430px);padding:0}form{padding:18px}input,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:9px;font-size:16px}label{display:block;font-size:12px;font-weight:700;margin:9px 0 4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.actions button{padding:9px 12px;border-radius:9px;border:1px solid #ccc;background:#fff}.save{background:#0a84ff!important;color:#fff}.wa{background:#25D366!important;color:#fff}.note{font-size:12px;color:#666;margin-top:8px}
+</style></head>
+<body>
+<header><div class="logo">EMA'S <span>BARBER</span></div><div class="toolbar"><button id="prev">‹</button><div id="dateLabel" class="date"></div><button id="next">›</button><button id="today">Hoy</button></div></header>
+<div class="wrap"><table><thead><tr><th>HORA</th><th><input id="barberName" value="Barbero" style="border:0;text-align:center;font-weight:700;width:95%"></th></tr></thead><tbody id="body"></tbody></table></div>
+<button class="fab" id="newBtn">+</button>
+<dialog id="dlg"><form id="form"><h2 id="title">Nueva cita</h2>
+<div class="row"><div><label>Fecha</label><input id="date" type="date" required></div><div><label>Hora</label><input id="time" type="time" step="600" required></div></div>
+<label>Cliente</label><input id="client" required><div class="row"><div><label>WhatsApp</label><input id="phone" type="tel" required></div><div><label>Servicio</label><input id="service"></div></div>
+<label>Notas</label><textarea id="notes"></textarea>
+<div class="actions"><button type="button" id="waBtn" class="wa" style="display:none">WhatsApp</button><button type="button" id="delBtn" style="display:none;color:#c00">Eliminar</button><button type="button" id="cancel">Cancelar</button><button class="save">Guardar</button></div>
+<div class="note">Recordatorio: 5 minutos antes. El envío 100% automático por WhatsApp requiere conectar WhatsApp Business API o un servicio como Make/Zapier.</div>
+</form></dialog>
+<script>
+const KEY='emas_10min_1barber';let data=JSON.parse(localStorage.getItem(KEY)||'null')||{barber:'Barbero',appts:{}};let day=new Date(),editing=null;
+function ymd(d){let y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${da}`}
+function save(){localStorage.setItem(KEY,JSON.stringify(data))} function key(d,t){return d+'|'+t}
+function display(t){let[h,m]=t.split(':').map(Number),ap=h<12?'A.M.':'P.M.',dh=h%12||12;return `${dh}:${String(m).padStart(2,'0')} ${ap}`}
+function msg(a,t){return `Hola ${a.client}, te recordamos que tu cita en EMA'S BARBER es en 5 minutos, a las ${display(t)}.${a.service?' Servicio: '+a.service+'.':''}`}
+function wa(phone,text){let p=(phone||'').replace(/\D/g,'');if(p.length===10)p='1'+p;window.open('https://wa.me/'+p+'?text='+encodeURIComponent(text),'_blank')}
+function render(){dateLabel.textContent=day.toLocaleDateString('es-PR',{weekday:'short',day:'numeric',month:'short',year:'numeric'});barberName.value=data.barber;body.innerHTML='';let d=ymd(day);
+for(let mins=300;mins<=1130;mins+=10){let h=Math.floor(mins/60),m=mins%60,t=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'),tr=document.createElement('tr'),tt=document.createElement('td');tt.className='time';tt.textContent=display(t);tr.appendChild(tt);let td=document.createElement('td');td.className='slot';let k=key(d,t),a=data.appts[k];if(a)td.innerHTML='<div class="appt"><b>'+a.client+'</b>'+(a.service||'')+(a.phone?'<br>'+a.phone:'')+'</div>';td.onclick=()=>openDlg(d,t,k);tr.appendChild(td);body.appendChild(tr)}}
+function openDlg(d,t,k){editing=data.appts[k]?k:null;let a=editing?data.appts[k]:{};title.textContent=editing?'Editar cita':'Nueva cita';date.value=d;time.value=t;client.value=a.client||'';phone.value=a.phone||'';service.value=a.service||'';notes.value=a.notes||'';delBtn.style.display=editing?'inline-block':'none';waBtn.style.display=a.phone?'inline-block':'none';dlg.showModal()}
+form.onsubmit=e=>{e.preventDefault();let nk=key(date.value,time.value);if(editing&&editing!==nk)delete data.appts[editing];data.appts[nk]={client:client.value.trim(),phone:phone.value.trim(),service:service.value.trim(),notes:notes.value.trim()};save();dlg.close();render()}
+cancel.onclick=()=>dlg.close();delBtn.onclick=()=>{if(editing&&confirm('¿Eliminar esta cita?')){delete data.appts[editing];save();dlg.close();render()}};waBtn.onclick=()=>wa(phone.value,msg({client:client.value,service:service.value},time.value));
+newBtn.onclick=()=>openDlg(ymd(day),'09:00','');prev.onclick=()=>{day.setDate(day.getDate()-1);render()};next.onclick=()=>{day.setDate(day.getDate()+1);render()};today.onclick=()=>{day=new Date();render()};barberName.onchange=e=>{data.barber=e.target.value||'Barbero';save()};render();
+</script></body></html>

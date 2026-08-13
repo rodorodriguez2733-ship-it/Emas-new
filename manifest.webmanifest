@@ -1,0 +1,8 @@
+{
+  "name": "EMA'S BARBER Agenda",
+  "short_name": "EMA'S BARBER",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff"
+}
