@@ -1,6 +1,1 @@
-EMA'S BARBER — campos opcionales
-
-Cliente, teléfono/WhatsApp, servicio, precio y notas son opcionales.
-La fecha y la hora se mantienen necesarias para ubicar la cita en la agenda.
-
-Para actualizar GitHub Pages reemplaza index.html, manifest.webmanifest y sw.js.
+Incluye selección múltiple de Recorte, Barba y Refine de cejas, precio manual opcional y Cuadre del día con total, citas y conteo de servicios.
