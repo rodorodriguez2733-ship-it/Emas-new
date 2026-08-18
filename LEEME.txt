@@ -1,1 +1,1 @@
-Versión web moderna: EMA'S BARBER en negro, tijeras en Recorte, precios editables por servicio, total automático, agenda cada 10 minutos y cuadre diario.
+Versión moderna con botón Ajustes: precios predeterminados para Recorte, Barba y Cejas, un servicio adicional editable con precio, y precios que se pueden cambiar en cada cita. Para GitHub Pages reemplaza index.html, manifest.webmanifest y sw.js.

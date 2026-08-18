@@ -10,7 +10,7 @@ header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid 
 .brand{display:flex;align-items:center;justify-content:center;gap:10px}.brandIcon{width:44px;height:44px;border-radius:12px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:23px}
 .brandText{font-size:24px;font-weight:950;color:#111}.brandSub{font-size:11px;letter-spacing:3px;font-weight:800;color:#555}
 .nav{display:flex;gap:8px;align-items:center;margin-top:10px}.nav button,.tabs button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:9px 10px;font-weight:800}.date{flex:1;text-align:center;font-weight:800;font-size:13px}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:9px 12px;border-bottom:1px solid #eee}.tabs button.active{background:#111;color:#fff;border-color:#111}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:9px 12px;border-bottom:1px solid #eee}.tabs button.active{background:#111;color:#fff;border-color:#111}
 .view{display:none}.view.active{display:block}.scheduler{overflow:auto;height:calc(100vh - 160px)}
 table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border-bottom:1px solid #e6e6e6}th{height:42px;background:#fafafa;font-size:12px}th:first-child,td:first-child{width:86px;background:#f2f2f3}td{height:46px}.time{text-align:center;font-size:11px;font-weight:800}.slot{padding:4px}
 .appt{background:#f5f5f5;border-left:4px solid #111;border-radius:10px;padding:6px;font-size:12px}.appt b{display:block}.price{font-weight:900;color:var(--green)}
@@ -22,16 +22,29 @@ input,textarea{width:100%;padding:11px;border:1px solid #d5d5d5;border-radius:11
 .service{display:grid;grid-template-columns:auto 34px 1fr 105px;gap:8px;align-items:center;border:1px solid #ddd;border-radius:14px;padding:10px;margin-top:9px}.service input[type=checkbox]{width:auto;transform:scale(1.2)}.emoji{font-size:22px;text-align:center}.svcName{font-weight:800}.service input[type=number]{padding:8px;text-align:right}
 .totalBox{margin-top:14px;padding:14px;border-radius:14px;background:#111;color:#fff;display:flex;justify-content:space-between;font-size:18px;font-weight:900}
 .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.actions button{border:1px solid #d5d5d5;background:#fff;border-radius:10px;padding:10px 13px;font-weight:800}.actions .save{background:#111;color:#fff;border-color:#111}
-.summary{padding:14px}.card{border:1px solid #e0e0e0;border-radius:16px;padding:14px;margin-bottom:10px}.big{font-size:32px;font-weight:950}.small{font-size:12px;color:#666}.sumrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee}
+.settings{padding:14px}.settingCard{border:1px solid #e0e0e0;border-radius:16px;padding:14px;margin-bottom:12px}.settingCard h3{margin:0 0 10px}.settingRow{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;margin:9px 0}.settingRow input{padding:9px}.settingsSave{width:100%;background:#111;color:#fff;border:0;border-radius:11px;padding:12px;font-weight:900}.summary{padding:14px}.card{border:1px solid #e0e0e0;border-radius:16px;padding:14px;margin-bottom:10px}.big{font-size:32px;font-weight:950}.small{font-size:12px;color:#666}.sumrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee}
 </style></head><body><div class="app">
 <header><div class="brand"><div class="brandIcon">✂️</div><div><div class="brandText">EMA'S BARBER</div><div class="brandSub">AGENDA</div></div></div>
 <div class="nav"><button id="prev">‹</button><div class="date" id="dateLabel"></div><button id="next">›</button><button id="today">Hoy</button></div></header>
 
-<div class="tabs"><button data-view="agenda" class="active">Agenda</button><button data-view="new">Nueva cita</button><button data-view="cuadre">Cuadre del día</button></div>
+<div class="tabs"><button data-view="agenda" class="active">Agenda</button><button data-view="new">Nueva cita</button><button data-view="cuadre">Cuadre</button><button data-view="settings">⚙️ Ajustes</button></div>
 
 <section id="agenda" class="view active"><div class="scheduler"><table><thead><tr><th>HORA</th><th>BARBERO</th></tr></thead><tbody id="body"></tbody></table></div></section>
 <section id="new" class="view"><div style="padding:14px"><div class="card"><b>Nueva cita</b><div class="small" style="margin-top:5px">Formulario moderno con precios por servicio.</div><button id="openNew" style="margin-top:12px;background:#111;color:#fff;border:0;border-radius:10px;padding:11px 14px;font-weight:800">+ Nueva cita</button></div></div></section>
 <section id="cuadre" class="view"><div class="summary"><div class="card"><div class="small">TOTAL DEL DÍA</div><div class="big">$<span id="dayTotal">0.00</span></div></div><div class="card"><b>Servicios</b><div id="serviceSummary"></div></div><div class="card"><b>Detalle</b><div id="incomeDetail"></div></div></div></section>
+<section id="settings" class="view"><div class="settings">
+<div class="card"><h2>⚙️ Ajustes</h2><div class="small">Define precios predeterminados. Al crear una cita se colocan solos, pero puedes cambiarlos.</div></div>
+<div class="settingCard"><h3>Precios</h3>
+<div class="settingRow"><b>✂️ Recorte</b><input id="setRecorte" type="number" min="0" step=".01" placeholder="$"></div>
+<div class="settingRow"><b>🧔 Barba</b><input id="setBarba" type="number" min="0" step=".01" placeholder="$"></div>
+<div class="settingRow"><b>〰️ Refine de cejas</b><input id="setCejas" type="number" min="0" step=".01" placeholder="$"></div>
+</div>
+<div class="settingCard"><h3>Cosa adicional</h3>
+<label>Nombre del servicio adicional</label><input id="setExtraName" placeholder="Ej. Diseño, Tinte, Facial">
+<label>Precio</label><input id="setExtraPrice" type="number" min="0" step=".01" placeholder="$">
+</div>
+<button id="saveSettings" class="settingsSave">Guardar ajustes</button>
+</div></section>
 
 <button id="newBtn" class="fab">+</button>
 
@@ -45,6 +58,7 @@ input,textarea{width:100%;padding:11px;border:1px solid #d5d5d5;border-radius:11
 <div class="service"><input id="recorteCheck" type="checkbox"><div class="emoji">✂️</div><div class="svcName">Recorte</div><input id="recortePrice" type="number" min="0" step=".01" placeholder="$"></div>
 <div class="service"><input id="barbaCheck" type="checkbox"><div class="emoji">🧔</div><div class="svcName">Barba</div><input id="barbaPrice" type="number" min="0" step=".01" placeholder="$"></div>
 <div class="service"><input id="cejasCheck" type="checkbox"><div class="emoji">〰️</div><div class="svcName">Refine de cejas</div><input id="cejasPrice" type="number" min="0" step=".01" placeholder="$"></div>
+<div class="service" id="extraRow"><input id="extraCheck" type="checkbox"><div class="emoji">➕</div><div class="svcName" id="extraLabel">Servicio adicional</div><input id="extraPrice" type="number" min="0" step=".01" placeholder="$"></div>
 <div class="totalBox"><span>Total</span><span>$<span id="apptTotal">0.00</span></span></div>
 
 <label>Notas <span class="optional">(opcional)</span></label><textarea id="notes"></textarea>
@@ -52,7 +66,7 @@ input,textarea{width:100%;padding:11px;border:1px solid #d5d5d5;border-radius:11
 </form></dialog></div>
 
 <script>
-const KEY='emas_modern_v1';let data=JSON.parse(localStorage.getItem(KEY)||'null')||{appts:{}};let day=new Date(),editing=null;
+const KEY='emas_modern_v1';let data=JSON.parse(localStorage.getItem(KEY)||'null')||{appts:{}};data.settings=data.settings||{prices:{Recorte:0,Barba:0,'Refine de cejas':0},extraName:'Servicio adicional',extraPrice:0};data.settings.prices=data.settings.prices||{Recorte:0,Barba:0,'Refine de cejas':0};let day=new Date(),editing=null;
 const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const key=(d,t)=>d+'|'+t;const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
 function showtime(t){let[h,m]=t.split(':').map(Number),ap=h<12?'A.M.':'P.M.';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
@@ -70,18 +84,28 @@ function render(){
  }
  renderSummary();
 }
-function calc(){let s=0;if(recorteCheck.checked)s+=Number(recortePrice.value||0);if(barbaCheck.checked)s+=Number(barbaPrice.value||0);if(cejasCheck.checked)s+=Number(cejasPrice.value||0);apptTotal.textContent=s.toFixed(2)}
-[recorteCheck,barbaCheck,cejasCheck,recortePrice,barbaPrice,cejasPrice].forEach(x=>x.addEventListener('input',calc));
+function calc(){let s=0;if(recorteCheck.checked)s+=Number(recortePrice.value||0);if(barbaCheck.checked)s+=Number(barbaPrice.value||0);if(cejasCheck.checked)s+=Number(cejasPrice.value||0);if(extraCheck.checked)s+=Number(extraPrice.value||0);apptTotal.textContent=s.toFixed(2)}
+[recorteCheck,barbaCheck,cejasCheck,extraCheck,recortePrice,barbaPrice,cejasPrice,extraPrice].forEach(x=>x.addEventListener('input',calc));
 function openDlg(d,t){
  let k=key(d,t);editing=data.appts[k]?k:null;let a=editing?data.appts[k]:{},map={};(a.services||[]).forEach(s=>map[s.name]=s.price);
  title.textContent=editing?'Editar cita':'Nueva cita';date.value=d;time.value=t;client.value=a.client||'';phone.value=a.phone||'';notes.value=a.notes||'';
- recorteCheck.checked=map['Recorte']!==undefined;barbaCheck.checked=map['Barba']!==undefined;cejasCheck.checked=map['Refine de cejas']!==undefined;
- recortePrice.value=map['Recorte']??'';barbaPrice.value=map['Barba']??'';cejasPrice.value=map['Refine de cejas']??'';delBtn.style.display=editing?'inline-block':'none';calc();dlg.showModal();
+ recorteCheck.checked=map['Recorte']!==undefined;barbaCheck.checked=map['Barba']!==undefined;cejasCheck.checked=map['Refine de cejas']!==undefined;extraCheck.checked=map[data.settings.extraName]!==undefined;
+ extraLabel.textContent=data.settings.extraName||'Servicio adicional';recortePrice.value=map['Recorte']??data.settings.prices.Recorte??'';barbaPrice.value=map['Barba']??data.settings.prices.Barba??'';cejasPrice.value=map['Refine de cejas']??data.settings.prices['Refine de cejas']??'';extraPrice.value=map[data.settings.extraName]??data.settings.extraPrice??'';delBtn.style.display=editing?'inline-block':'none';calc();dlg.showModal();
 }
-form.onsubmit=e=>{e.preventDefault();let arr=[];if(recorteCheck.checked)arr.push({name:'Recorte',price:Number(recortePrice.value||0)});if(barbaCheck.checked)arr.push({name:'Barba',price:Number(barbaPrice.value||0)});if(cejasCheck.checked)arr.push({name:'Refine de cejas',price:Number(cejasPrice.value||0)});let nk=key(date.value,time.value);if(editing&&editing!==nk)delete data.appts[editing];data.appts[nk]={client:client.value.trim(),phone:phone.value.trim(),services:arr,notes:notes.value.trim()};save();dlg.close();render()}
+form.onsubmit=e=>{e.preventDefault();let arr=[];if(recorteCheck.checked)arr.push({name:'Recorte',price:Number(recortePrice.value||0)});if(barbaCheck.checked)arr.push({name:'Barba',price:Number(barbaPrice.value||0)});if(cejasCheck.checked)arr.push({name:'Refine de cejas',price:Number(cejasPrice.value||0)});if(extraCheck.checked)arr.push({name:data.settings.extraName||'Servicio adicional',price:Number(extraPrice.value||0)});let nk=key(date.value,time.value);if(editing&&editing!==nk)delete data.appts[editing];data.appts[nk]={client:client.value.trim(),phone:phone.value.trim(),services:arr,notes:notes.value.trim()};save();dlg.close();render()}
 cancelBtn.onclick=()=>dlg.close();delBtn.onclick=()=>{if(editing&&confirm('¿Eliminar esta cita?')){delete data.appts[editing];save();dlg.close();render()}};
 newBtn.onclick=openNew.onclick=()=>openDlg(ymd(day),'09:00');prev.onclick=()=>{day.setDate(day.getDate()-1);render()};next.onclick=()=>{day.setDate(day.getDate()+1);render()};today.onclick=()=>{day=new Date();render()};
-function renderSummary(){let d=ymd(day),es=Object.entries(data.appts).filter(([k])=>k.startsWith(d+'|')),sum=0,c={'Recorte':0,'Barba':0,'Refine de cejas':0},money={'Recorte':0,'Barba':0,'Refine de cejas':0};es.forEach(([k,a])=>{sum+=total(a);(a.services||[]).forEach(s=>{c[s.name]++;money[s.name]+=Number(s.price||0)})});dayTotal.textContent=sum.toFixed(2);serviceSummary.innerHTML=Object.keys(c).map(s=>`<div class="sumrow"><span>${s} × ${c[s]}</span><b>$${money[s].toFixed(2)}</b></div>`).join('');incomeDetail.innerHTML=es.length?es.map(([k,a])=>`<p><b>${showtime(k.split('|')[1])} ${a.client||'Cita'}</b><br>${services(a)||'Sin servicio'}<br><span class="price">Total $${total(a).toFixed(2)}</span></p>`).join(''):'No hay citas.'}
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(b.dataset.view).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));renderSummary()});
+function renderSummary(){let d=ymd(day),es=Object.entries(data.appts).filter(([k])=>k.startsWith(d+'|')),sum=0,c={},money={};['Recorte','Barba','Refine de cejas',data.settings.extraName||'Servicio adicional'].forEach(n=>{c[n]=0;money[n]=0});es.forEach(([k,a])=>{sum+=total(a);(a.services||[]).forEach(s=>{c[s.name]=(c[s.name]||0)+1;money[s.name]=(money[s.name]||0)+Number(s.price||0)})});dayTotal.textContent=sum.toFixed(2);serviceSummary.innerHTML=Object.keys(c).map(s=>`<div class="sumrow"><span>${s} × ${c[s]}</span><b>$${money[s].toFixed(2)}</b></div>`).join('');incomeDetail.innerHTML=es.length?es.map(([k,a])=>`<p><b>${showtime(k.split('|')[1])} ${a.client||'Cita'}</b><br>${services(a)||'Sin servicio'}<br><span class="price">Total $${total(a).toFixed(2)}</span></p>`).join(''):'No hay citas.'}
+
+function loadSettings(){setRecorte.value=data.settings.prices.Recorte||'';setBarba.value=data.settings.prices.Barba||'';setCejas.value=data.settings.prices['Refine de cejas']||'';setExtraName.value=data.settings.extraName||'Servicio adicional';setExtraPrice.value=data.settings.extraPrice||'';}
+saveSettings.onclick=()=>{data.settings.prices.Recorte=Number(setRecorte.value||0);data.settings.prices.Barba=Number(setBarba.value||0);data.settings.prices['Refine de cejas']=Number(setCejas.value||0);data.settings.extraName=setExtraName.value.trim()||'Servicio adicional';data.settings.extraPrice=Number(setExtraPrice.value||0);save();loadSettings();renderSummary();alert('Ajustes guardados');};
+loadSettings();
+
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(b.dataset.view).classList.add('active');
+function loadSettings(){setRecorte.value=data.settings.prices.Recorte||'';setBarba.value=data.settings.prices.Barba||'';setCejas.value=data.settings.prices['Refine de cejas']||'';setExtraName.value=data.settings.extraName||'Servicio adicional';setExtraPrice.value=data.settings.extraPrice||'';}
+saveSettings.onclick=()=>{data.settings.prices.Recorte=Number(setRecorte.value||0);data.settings.prices.Barba=Number(setBarba.value||0);data.settings.prices['Refine de cejas']=Number(setCejas.value||0);data.settings.extraName=setExtraName.value.trim()||'Servicio adicional';data.settings.extraPrice=Number(setExtraPrice.value||0);save();loadSettings();renderSummary();alert('Ajustes guardados');};
+loadSettings();
+
+document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));renderSummary()});
 render();
 </script></body></html>
