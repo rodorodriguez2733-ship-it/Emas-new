@@ -1,19 +1,223 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><title>EMA'S BARBER</title>
-<style>body{font-family:-apple-system;margin:0}header{padding:12px;position:sticky;top:0;background:white;border-bottom:1px solid #ddd}.logo{text-align:center;font-weight:900;font-size:26px;color:#d71920}.logo span{display:block;color:#222;font-size:13px;letter-spacing:6px}.nav,.tabs{display:flex;gap:8px;align-items:center;margin-top:10px}.nav div{flex:1;text-align:center;font-weight:700}button{padding:9px;border:1px solid #ccc;border-radius:9px;background:#fff}.tabs{padding:8px 10px;border-bottom:1px solid #ddd}.tabs button.active{background:#222;color:#fff}.view{display:none}.view.active{display:block}.wrap{overflow:auto;height:calc(100vh - 155px)}table{border-collapse:collapse;width:100%;table-layout:fixed}th,td{border:1px solid #ddd}th:first-child,td:first-child{width:85px;background:#eee}.time{text-align:center;font-size:11px;font-weight:700}.slot{height:40px;padding:3px}.appt{background:#eef6ff;border-left:4px solid #0a84ff;padding:5px;border-radius:5px;font-size:12px}.price{font-weight:800;color:#16833d}.fab{position:fixed;right:18px;bottom:20px;width:56px;height:56px;border-radius:50%;border:0;background:#0a84ff;color:#fff;font-size:30px}dialog{border:0;border-radius:16px;width:min(92vw,450px)}form{padding:16px}label{display:block;font-size:12px;font-weight:700;margin:9px 0 4px}input,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:16px}.check{display:flex;gap:8px;align-items:center;padding:8px}.check input{width:auto}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.summary{padding:14px}.card{border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:10px}.big{font-size:30px;font-weight:900;color:#16833d}</style></head>
-<body><header><div class="logo">EMA'S <span>BARBER</span></div><div class="nav"><button id="prev">‹</button><div id="label"></div><button id="next">›</button><button id="today">Hoy</button></div></header>
-<div class="tabs"><button data-v="agenda" class="active">Agenda</button><button data-v="cuadre">Cuadre del día</button></div>
-<section id="agenda" class="view active"><div class="wrap"><table><thead><tr><th>HORA</th><th>BARBERO</th></tr></thead><tbody id="body"></tbody></table></div></section>
-<section id="cuadre" class="view"><div class="summary"><div class="card"><div>Total del día</div><div class="big">$<span id="total">0.00</span></div><div><span id="count">0</span> citas con precio</div></div><div class="card"><b>Servicios realizados</b><div id="svcSummary"></div></div><div class="card"><b>Detalle</b><div id="detail"></div></div></div></section>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EMA'S BARBER">
+<link rel="manifest" href="manifest.webmanifest">
+<title>EMA'S BARBER</title>
+<style>
+:root{--blue:#0a84ff;--green:#17843c;--line:#d6d9dd}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Arial;background:#fff;color:#222}
+header{position:sticky;top:0;background:#fff;border-bottom:1px solid #ddd;padding:12px;z-index:10}
+.logo{text-align:center;font-size:27px;font-weight:900;color:#d71920}
+.logo span{display:block;width:max-content;margin:auto;color:#222;font-size:14px;letter-spacing:7px;border-top:4px solid #29235c;border-bottom:4px solid #29235c}
+.nav{display:flex;gap:8px;align-items:center;margin-top:10px}
+.nav button{padding:8px 10px;border:1px solid #ccc;border-radius:9px;background:#fff}
+.date{flex:1;text-align:center;font-weight:700}
+.tabs{display:flex;gap:7px;padding:8px 10px;border-bottom:1px solid #ddd}
+.tabs button{padding:8px 10px;border:1px solid #ccc;border-radius:9px;background:#fff;font-weight:700}
+.tabs button.active{background:#222;color:#fff}
+.view{display:none}.view.active{display:block}
+.wrap{overflow:auto;height:calc(100vh - 155px)}
+table{border-collapse:collapse;width:100%;table-layout:fixed}
+th,td{border:1px solid var(--line)}
+th:first-child,td:first-child{width:85px;background:#eee}
+.time{text-align:center;font-size:11px;font-weight:700}
+.slot{height:44px;padding:3px}
+.appt{background:#eef6ff;border-left:4px solid var(--blue);padding:5px;border-radius:6px;font-size:12px}
+.appt b{display:block}.price{font-weight:800;color:var(--green)}
+.fab{position:fixed;right:18px;bottom:22px;width:56px;height:56px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:30px}
+dialog{border:0;border-radius:16px;width:min(94vw,470px);padding:0}
+form{padding:17px}
+label{display:block;font-size:12px;font-weight:700;margin:9px 0 4px}
+input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff}
+.service-row{display:grid;grid-template-columns:auto 1fr 105px;gap:8px;align-items:center;border:1px solid #ddd;border-radius:11px;padding:9px;margin-top:8px}
+.service-row input[type=checkbox]{width:auto;transform:scale(1.15)}
+.service-row input[type=number]{padding:8px}
+.totalbox{margin-top:12px;padding:12px;border-radius:11px;background:#f2f7f3;font-size:18px;font-weight:900;color:var(--green)}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.actions button{padding:9px;border:1px solid #ccc;border-radius:9px;background:#fff}
+.save{background:var(--blue)!important;color:#fff}
+.summary{padding:14px}.card{border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:10px}
+.big{font-size:30px;font-weight:900;color:var(--green)}
+.small{font-size:12px;color:#666}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">EMA'S <span>BARBER</span></div>
+<div class="nav"><button id="prev">‹</button><div id="dateLabel" class="date"></div><button id="next">›</button><button id="today">Hoy</button></div>
+</header>
+
+<div class="tabs">
+<button data-view="agenda" class="active">Agenda</button>
+<button data-view="cuadre">Cuadre del día</button>
+</div>
+
+<section id="agenda" class="view active">
+<div class="wrap">
+<table><thead><tr><th>HORA</th><th>BARBERO</th></tr></thead><tbody id="body"></tbody></table>
+</div>
+</section>
+
+<section id="cuadre" class="view">
+<div class="summary">
+<div class="card"><div class="small">TOTAL DEL DÍA</div><div class="big">$<span id="dayTotal">0.00</span></div></div>
+<div class="card"><b>Servicios</b><div id="serviceSummary"></div></div>
+<div class="card"><b>Detalle</b><div id="incomeDetail"></div></div>
+</div>
+</section>
+
 <button id="newBtn" class="fab">+</button>
-<dialog id="dlg"><form id="form"><h2 id="title">Nueva cita</h2><label>Fecha</label><input id="date" type="date" required><label>Hora</label><input id="time" type="time" step="600" required><label>Cliente (opcional)</label><input id="client"><label>Teléfono (opcional)</label><input id="phone"><label>Servicios (puedes escoger varios)</label><label class="check"><input class="svc" type="checkbox" value="Recorte">Recorte</label><label class="check"><input class="svc" type="checkbox" value="Barba">Barba</label><label class="check"><input class="svc" type="checkbox" value="Refine de cejas">Refine de cejas</label><label>Precio total (opcional)</label><input id="price" type="number" min="0" step=".01"><label>Notas (opcional)</label><textarea id="notes"></textarea><div class="actions"><button type="button" id="del" style="display:none;color:#c00">Eliminar</button><button type="button" id="cancel">Cancelar</button><button>Guardar</button></div></form></dialog>
+
+<dialog id="dlg">
+<form id="form">
+<h2 id="title">Nueva cita</h2>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div><label>Fecha</label><input id="date" type="date" required></div>
+<div><label>Hora</label><input id="time" type="time" step="600" required></div>
+</div>
+
+<label>Cliente (opcional)</label><input id="client">
+<label>Teléfono / WhatsApp (opcional)</label><input id="phone">
+
+<label>Servicios — marca los que quiera y escribe el precio de cada uno</label>
+
+<div class="service-row">
+<input id="recorteCheck" type="checkbox">
+<div><b>Recorte</b></div>
+<input id="recortePrice" type="number" min="0" step=".01" placeholder="$0.00">
+</div>
+
+<div class="service-row">
+<input id="barbaCheck" type="checkbox">
+<div><b>Barba</b></div>
+<input id="barbaPrice" type="number" min="0" step=".01" placeholder="$0.00">
+</div>
+
+<div class="service-row">
+<input id="cejasCheck" type="checkbox">
+<div><b>Refine de cejas</b></div>
+<input id="cejasPrice" type="number" min="0" step=".01" placeholder="$0.00">
+</div>
+
+<div class="totalbox">Total de la cita: $<span id="appointmentTotal">0.00</span></div>
+
+<label>Notas (opcional)</label><textarea id="notes"></textarea>
+
+<div class="actions">
+<button type="button" id="delBtn" style="display:none;color:#c00">Eliminar</button>
+<button type="button" id="cancelBtn">Cancelar</button>
+<button class="save">Guardar</button>
+</div>
+</form>
+</dialog>
+
 <script>
-const K='emas_multi_v2';let data=JSON.parse(localStorage.getItem(K)||'null')||{appts:{}};let day=new Date(),editing=null;
-const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const key=(d,t)=>d+'|'+t; const save=()=>localStorage.setItem(K,JSON.stringify(data));
-function showtime(t){let[h,m]=t.split(':').map(Number),ap=h<12?'A.M.':'P.M.';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
-function render(){label.textContent=day.toLocaleDateString('es-PR',{weekday:'short',day:'numeric',month:'short'});body.innerHTML='';let d=ymd(day);for(let n=300;n<=1130;n+=10){let h=Math.floor(n/60),m=n%60,t=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`,tr=document.createElement('tr'),a=data.appts[key(d,t)],td1=document.createElement('td'),td2=document.createElement('td');td1.className='time';td1.textContent=showtime(t);td2.className='slot';if(a){let s=(a.services||[]).join(' + ');td2.innerHTML=`<div class="appt"><b>${a.client||'Cita'}</b>${s?'<br>'+s:''}${a.price!==''&&a.price!=null?'<br><span class="price">$'+Number(a.price).toFixed(2)+'</span>':''}</div>`}td2.onclick=()=>openDlg(d,t);tr.append(td1,td2);body.appendChild(tr)}summary()}
-function summary(){let d=ymd(day),es=Object.entries(data.appts).filter(([k])=>k.startsWith(d+'|')),sum=0,c=0,sc={'Recorte':0,'Barba':0,'Refine de cejas':0};es.forEach(([k,a])=>{if(a.price!==''&&a.price!=null){sum+=Number(a.price);c++}(a.services||[]).forEach(s=>sc[s]++)});total.textContent=sum.toFixed(2);count.textContent=c;svcSummary.innerHTML=Object.entries(sc).map(([s,n])=>`<p>${s}: <b>${n}</b></p>`).join('');detail.innerHTML=es.length?es.map(([k,a])=>`<p><b>${showtime(k.split('|')[1])} ${a.client||'Cita'}</b> — ${(a.services||[]).join(', ')||'Sin servicio'} ${a.price!==''&&a.price!=null?'— $'+Number(a.price).toFixed(2):''}</p>`).join(''):'No hay citas.'}
-function openDlg(d,t){let k=key(d,t);editing=data.appts[k]?k:null;let a=editing?data.appts[k]:{};date.value=d;time.value=t;client.value=a.client||'';phone.value=a.phone||'';price.value=a.price??'';notes.value=a.notes||'';document.querySelectorAll('.svc').forEach(x=>x.checked=(a.services||[]).includes(x.value));del.style.display=editing?'inline-block':'none';dlg.showModal()}
-form.onsubmit=e=>{e.preventDefault();let nk=key(date.value,time.value);if(editing&&editing!==nk)delete data.appts[editing];data.appts[nk]={client:client.value.trim(),phone:phone.value.trim(),services:[...document.querySelectorAll('.svc:checked')].map(x=>x.value),price:price.value===''?'':Number(price.value),notes:notes.value.trim()};save();dlg.close();render()}
-cancel.onclick=()=>dlg.close();del.onclick=()=>{if(editing&&confirm('¿Eliminar?')){delete data.appts[editing];save();dlg.close();render()}};newBtn.onclick=()=>openDlg(ymd(day),'09:00');prev.onclick=()=>{day.setDate(day.getDate()-1);render()};next.onclick=()=>{day.setDate(day.getDate()+1);render()};today.onclick=()=>{day=new Date();render()};document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(b.dataset.v).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));summary()});render();
-</script></body></html>
+const KEY='emas_service_prices_v1';
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||{appts:{}};
+let day=new Date(),editing=null;
+
+function ymd(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function key(d,t){return d+'|'+t}
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function display(t){let[h,m]=t.split(':').map(Number),ap=h<12?'A.M.':'P.M.';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
+function serviceTotal(a){return (a.services||[]).reduce((s,x)=>s+Number(x.price||0),0)}
+function serviceText(a){return (a.services||[]).map(x=>`${x.name} $${Number(x.price||0).toFixed(2)}`).join(' + ')}
+
+function render(){
+ dateLabel.textContent=day.toLocaleDateString('es-PR',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+ body.innerHTML=''; let d=ymd(day);
+ for(let n=300;n<=1130;n+=10){
+   let h=Math.floor(n/60),m=n%60,t=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+   let tr=document.createElement('tr'),td1=document.createElement('td'),td2=document.createElement('td');
+   td1.className='time';td1.textContent=display(t);
+   td2.className='slot';
+   let a=data.appts[key(d,t)];
+   if(a){
+      td2.innerHTML=`<div class="appt"><b>${a.client||'Cita'}</b>${serviceText(a)?'<br>'+serviceText(a):''}<br><span class="price">Total $${serviceTotal(a).toFixed(2)}</span></div>`;
+   }
+   td2.onclick=()=>openDialog(d,t);
+   tr.append(td1,td2);body.appendChild(tr);
+ }
+ renderSummary();
+}
+
+function calcFormTotal(){
+ let total=0;
+ if(recorteCheck.checked) total+=Number(recortePrice.value||0);
+ if(barbaCheck.checked) total+=Number(barbaPrice.value||0);
+ if(cejasCheck.checked) total+=Number(cejasPrice.value||0);
+ appointmentTotal.textContent=total.toFixed(2);
+}
+[recorteCheck,barbaCheck,cejasCheck,recortePrice,barbaPrice,cejasPrice].forEach(el=>el.addEventListener('input',calcFormTotal));
+
+function openDialog(d,t){
+ let k=key(d,t);editing=data.appts[k]?k:null;let a=editing?data.appts[k]:{};
+ title.textContent=editing?'Editar cita':'Nueva cita';
+ date.value=d;time.value=t;client.value=a.client||'';phone.value=a.phone||'';notes.value=a.notes||'';
+
+ let map={};
+ (a.services||[]).forEach(s=>map[s.name]=s.price);
+
+ recorteCheck.checked=map['Recorte']!==undefined;
+ barbaCheck.checked=map['Barba']!==undefined;
+ cejasCheck.checked=map['Refine de cejas']!==undefined;
+
+ recortePrice.value=map['Recorte']??'';
+ barbaPrice.value=map['Barba']??'';
+ cejasPrice.value=map['Refine de cejas']??'';
+
+ delBtn.style.display=editing?'inline-block':'none';
+ calcFormTotal();
+ dlg.showModal();
+}
+
+form.onsubmit=e=>{
+ e.preventDefault();
+ let services=[];
+ if(recorteCheck.checked)services.push({name:'Recorte',price:Number(recortePrice.value||0)});
+ if(barbaCheck.checked)services.push({name:'Barba',price:Number(barbaPrice.value||0)});
+ if(cejasCheck.checked)services.push({name:'Refine de cejas',price:Number(cejasPrice.value||0)});
+
+ let nk=key(date.value,time.value);
+ if(editing&&editing!==nk)delete data.appts[editing];
+ data.appts[nk]={client:client.value.trim(),phone:phone.value.trim(),services,notes:notes.value.trim()};
+ save();dlg.close();render();
+};
+
+cancelBtn.onclick=()=>dlg.close();
+delBtn.onclick=()=>{if(editing&&confirm('¿Eliminar esta cita?')){delete data.appts[editing];save();dlg.close();render()}};
+newBtn.onclick=()=>openDialog(ymd(day),'09:00');
+prev.onclick=()=>{day.setDate(day.getDate()-1);render()};
+next.onclick=()=>{day.setDate(day.getDate()+1);render()};
+today.onclick=()=>{day=new Date();render()};
+
+function renderSummary(){
+ let d=ymd(day),entries=Object.entries(data.appts).filter(([k])=>k.startsWith(d+'|')).sort((a,b)=>a[0].localeCompare(b[0]));
+ let total=0,counts={'Recorte':0,'Barba':0,'Refine de cejas':0},serviceMoney={'Recorte':0,'Barba':0,'Refine de cejas':0};
+
+ entries.forEach(([k,a])=>{
+   total+=serviceTotal(a);
+   (a.services||[]).forEach(s=>{counts[s.name]=(counts[s.name]||0)+1;serviceMoney[s.name]=(serviceMoney[s.name]||0)+Number(s.price||0)});
+ });
+
+ dayTotal.textContent=total.toFixed(2);
+ serviceSummary.innerHTML=Object.keys(counts).map(s=>`<p><b>${s}</b>: ${counts[s]} — $${serviceMoney[s].toFixed(2)}</p>`).join('');
+ incomeDetail.innerHTML=entries.length?entries.map(([k,a])=>`<p><b>${display(k.split('|')[1])} ${a.client||'Cita'}</b><br>${serviceText(a)||'Sin servicio'}<br><span class="price">Total $${serviceTotal(a).toFixed(2)}</span></p>`).join(''):'No hay citas.';
+}
+
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+ document.getElementById(b.dataset.view).classList.add('active');
+ document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));
+ renderSummary();
+});
+
+render();
+</script>
+</body></html>
