@@ -1,9 +1,1 @@
-Nueva versión:
-- Recorte, Barba y Refine de cejas se pueden seleccionar juntos.
-- Cada servicio tiene su propio encasillado para escribir/editar el precio.
-- El total de la cita se calcula automáticamente.
-- El Cuadre del día suma cada servicio y muestra total del día.
-- Cliente, teléfono, servicios, precios y notas continúan opcionales.
-- Citas cada 10 minutos.
-
-Para actualizar GitHub Pages reemplaza index.html, manifest.webmanifest y sw.js.
+Versión web moderna: EMA'S BARBER en negro, tijeras en Recorte, precios editables por servicio, total automático, agenda cada 10 minutos y cuadre diario.
