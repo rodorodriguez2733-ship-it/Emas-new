@@ -1,1 +1,1 @@
-Versión moderna con botón Ajustes: precios predeterminados para Recorte, Barba y Cejas, un servicio adicional editable con precio, y precios que se pueden cambiar en cada cita. Para GitHub Pages reemplaza index.html, manifest.webmanifest y sw.js.
+Las citas pasadas se ponen rojas automáticamente. Toca el nombre de la cita para borrarla con confirmación.

@@ -3,109 +3,61 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="EMA'S BARBER">
 <link rel="manifest" href="manifest.webmanifest"><title>EMA'S BARBER</title>
 <style>
-:root{--black:#111;--line:#dedede;--green:#15803d}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial;background:#f4f4f5;color:#111}
-.app{max-width:560px;margin:auto;min-height:100vh;background:#fff}
-header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #eee;padding:12px 16px}
-.brand{display:flex;align-items:center;justify-content:center;gap:10px}.brandIcon{width:44px;height:44px;border-radius:12px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:23px}
-.brandText{font-size:24px;font-weight:950;color:#111}.brandSub{font-size:11px;letter-spacing:3px;font-weight:800;color:#555}
-.nav{display:flex;gap:8px;align-items:center;margin-top:10px}.nav button,.tabs button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:9px 10px;font-weight:800}.date{flex:1;text-align:center;font-weight:800;font-size:13px}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:9px 12px;border-bottom:1px solid #eee}.tabs button.active{background:#111;color:#fff;border-color:#111}
-.view{display:none}.view.active{display:block}.scheduler{overflow:auto;height:calc(100vh - 160px)}
-table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border-bottom:1px solid #e6e6e6}th{height:42px;background:#fafafa;font-size:12px}th:first-child,td:first-child{width:86px;background:#f2f2f3}td{height:46px}.time{text-align:center;font-size:11px;font-weight:800}.slot{padding:4px}
-.appt{background:#f5f5f5;border-left:4px solid #111;border-radius:10px;padding:6px;font-size:12px}.appt b{display:block}.price{font-weight:900;color:var(--green)}
-.fab{position:fixed;right:22px;bottom:24px;width:58px;height:58px;border:0;border-radius:50%;background:#111;color:#fff;font-size:30px;box-shadow:0 8px 24px #0003}
-dialog{border:0;border-radius:22px;padding:0;width:min(94vw,500px);max-height:90vh;overflow:auto;box-shadow:0 30px 80px #0005}dialog::backdrop{background:#0007}form{padding:18px}
-.formTitle{display:flex;gap:10px;align-items:center}.formIcon{width:40px;height:40px;border-radius:12px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
-h2{margin:0}label{display:block;font-size:12px;font-weight:800;margin:10px 0 5px}.optional{font-weight:500;color:#777}
-input,textarea{width:100%;padding:11px;border:1px solid #d5d5d5;border-radius:11px;font-size:16px;background:#fff}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.service{display:grid;grid-template-columns:auto 34px 1fr 105px;gap:8px;align-items:center;border:1px solid #ddd;border-radius:14px;padding:10px;margin-top:9px}.service input[type=checkbox]{width:auto;transform:scale(1.2)}.emoji{font-size:22px;text-align:center}.svcName{font-weight:800}.service input[type=number]{padding:8px;text-align:right}
-.totalBox{margin-top:14px;padding:14px;border-radius:14px;background:#111;color:#fff;display:flex;justify-content:space-between;font-size:18px;font-weight:900}
-.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.actions button{border:1px solid #d5d5d5;background:#fff;border-radius:10px;padding:10px 13px;font-weight:800}.actions .save{background:#111;color:#fff;border-color:#111}
-.settings{padding:14px}.settingCard{border:1px solid #e0e0e0;border-radius:16px;padding:14px;margin-bottom:12px}.settingCard h3{margin:0 0 10px}.settingRow{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;margin:9px 0}.settingRow input{padding:9px}.settingsSave{width:100%;background:#111;color:#fff;border:0;border-radius:11px;padding:12px;font-weight:900}.summary{padding:14px}.card{border:1px solid #e0e0e0;border-radius:16px;padding:14px;margin-bottom:10px}.big{font-size:32px;font-weight:950}.small{font-size:12px;color:#666}.sumrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee}
-</style></head><body><div class="app">
-<header><div class="brand"><div class="brandIcon">✂️</div><div><div class="brandText">EMA'S BARBER</div><div class="brandSub">AGENDA</div></div></div>
-<div class="nav"><button id="prev">‹</button><div class="date" id="dateLabel"></div><button id="next">›</button><button id="today">Hoy</button></div></header>
-
-<div class="tabs"><button data-view="agenda" class="active">Agenda</button><button data-view="new">Nueva cita</button><button data-view="cuadre">Cuadre</button><button data-view="settings">⚙️ Ajustes</button></div>
-
-<section id="agenda" class="view active"><div class="scheduler"><table><thead><tr><th>HORA</th><th>BARBERO</th></tr></thead><tbody id="body"></tbody></table></div></section>
-<section id="new" class="view"><div style="padding:14px"><div class="card"><b>Nueva cita</b><div class="small" style="margin-top:5px">Formulario moderno con precios por servicio.</div><button id="openNew" style="margin-top:12px;background:#111;color:#fff;border:0;border-radius:10px;padding:11px 14px;font-weight:800">+ Nueva cita</button></div></div></section>
-<section id="cuadre" class="view"><div class="summary"><div class="card"><div class="small">TOTAL DEL DÍA</div><div class="big">$<span id="dayTotal">0.00</span></div></div><div class="card"><b>Servicios</b><div id="serviceSummary"></div></div><div class="card"><b>Detalle</b><div id="incomeDetail"></div></div></div></section>
-<section id="settings" class="view"><div class="settings">
-<div class="card"><h2>⚙️ Ajustes</h2><div class="small">Define precios predeterminados. Al crear una cita se colocan solos, pero puedes cambiarlos.</div></div>
-<div class="settingCard"><h3>Precios</h3>
-<div class="settingRow"><b>✂️ Recorte</b><input id="setRecorte" type="number" min="0" step=".01" placeholder="$"></div>
-<div class="settingRow"><b>🧔 Barba</b><input id="setBarba" type="number" min="0" step=".01" placeholder="$"></div>
-<div class="settingRow"><b>〰️ Refine de cejas</b><input id="setCejas" type="number" min="0" step=".01" placeholder="$"></div>
-</div>
-<div class="settingCard"><h3>Cosa adicional</h3>
-<label>Nombre del servicio adicional</label><input id="setExtraName" placeholder="Ej. Diseño, Tinte, Facial">
-<label>Precio</label><input id="setExtraPrice" type="number" min="0" step=".01" placeholder="$">
-</div>
-<button id="saveSettings" class="settingsSave">Guardar ajustes</button>
-</div></section>
-
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Arial;background:#fff;color:#111}
+header{padding:12px;position:sticky;top:0;background:#fff;border-bottom:1px solid #ddd;z-index:5}
+.logo{text-align:center;font-weight:900;font-size:26px}.nav,.tabs{display:flex;gap:8px;align-items:center;margin-top:10px}.nav div{flex:1;text-align:center;font-weight:700}
+button{padding:9px;border:1px solid #ccc;border-radius:9px;background:#fff}.tabs{padding:8px 10px;border-bottom:1px solid #ddd}.tabs button.active{background:#111;color:#fff}.view{display:none}.view.active{display:block}
+.wrap{overflow:auto;height:calc(100vh - 155px)}table{border-collapse:collapse;width:100%;table-layout:fixed}th,td{border:1px solid #ddd}th:first-child,td:first-child{width:85px;background:#eee}.time{text-align:center;font-size:11px;font-weight:700}.slot{height:42px;padding:3px}
+.appt{background:#f3f3f3;border-left:4px solid #111;padding:6px;border-radius:7px;font-size:12px}.appt.past{background:#ffe3e7;border-left-color:#d7263d;color:#8b1423}.appt b{display:block}.apptName{text-decoration:underline dotted;cursor:pointer}.price{font-weight:800;color:#16833d}.appt.past .price{color:#a11122}
+.fab{position:fixed;right:18px;bottom:20px;width:56px;height:56px;border-radius:50%;border:0;background:#111;color:#fff;font-size:30px}
+dialog{border:0;border-radius:16px;width:min(92vw,460px)}form{padding:16px}label{display:block;font-size:12px;font-weight:700;margin:9px 0 4px}input,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:16px}
+.service{display:grid;grid-template-columns:auto 1fr 100px;gap:8px;align-items:center;border:1px solid #ddd;border-radius:10px;padding:8px;margin-top:8px}.service input[type=checkbox]{width:auto}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.summary{padding:14px}.card{border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:10px}.big{font-size:30px;font-weight:900}
+</style></head>
+<body>
+<header><div class="logo">✂️ EMA'S BARBER</div><div class="nav"><button id="prev">‹</button><div id="label"></div><button id="next">›</button><button id="today">Hoy</button></div></header>
+<div class="tabs"><button data-v="agenda" class="active">Agenda</button><button data-v="cuadre">Cuadre</button></div>
+<section id="agenda" class="view active"><div class="wrap"><table><thead><tr><th>HORA</th><th>BARBERO</th></tr></thead><tbody id="body"></tbody></table></div></section>
+<section id="cuadre" class="view"><div class="summary"><div class="card"><div>Total del día</div><div class="big">$<span id="total">0.00</span></div></div><div class="card"><b>Detalle</b><div id="detail"></div></div></div></section>
 <button id="newBtn" class="fab">+</button>
 
-<dialog id="dlg"><form id="form">
-<div class="formTitle"><div class="formIcon">✂️</div><div><h2 id="title">Nueva cita</h2><div class="small">EMA'S BARBER</div></div></div>
-<div class="row"><div><label>Fecha</label><input id="date" type="date" required></div><div><label>Hora</label><input id="time" type="time" step="600" required></div></div>
-<label>Cliente <span class="optional">(opcional)</span></label><input id="client">
-<label>Teléfono / WhatsApp <span class="optional">(opcional)</span></label><input id="phone">
-
-<label>Servicios <span class="optional">(puedes escoger varios)</span></label>
-<div class="service"><input id="recorteCheck" type="checkbox"><div class="emoji">✂️</div><div class="svcName">Recorte</div><input id="recortePrice" type="number" min="0" step=".01" placeholder="$"></div>
-<div class="service"><input id="barbaCheck" type="checkbox"><div class="emoji">🧔</div><div class="svcName">Barba</div><input id="barbaPrice" type="number" min="0" step=".01" placeholder="$"></div>
-<div class="service"><input id="cejasCheck" type="checkbox"><div class="emoji">〰️</div><div class="svcName">Refine de cejas</div><input id="cejasPrice" type="number" min="0" step=".01" placeholder="$"></div>
-<div class="service" id="extraRow"><input id="extraCheck" type="checkbox"><div class="emoji">➕</div><div class="svcName" id="extraLabel">Servicio adicional</div><input id="extraPrice" type="number" min="0" step=".01" placeholder="$"></div>
-<div class="totalBox"><span>Total</span><span>$<span id="apptTotal">0.00</span></span></div>
-
-<label>Notas <span class="optional">(opcional)</span></label><textarea id="notes"></textarea>
-<div class="actions"><button type="button" id="delBtn" style="display:none;color:#c00">Eliminar</button><button type="button" id="cancelBtn">Cancelar</button><button class="save">Guardar</button></div>
-</form></dialog></div>
+<dialog id="dlg"><form id="form"><h2 id="title">Nueva cita</h2>
+<label>Fecha</label><input id="date" type="date" required><label>Hora</label><input id="time" type="time" step="600" required>
+<label>Cliente (opcional)</label><input id="client"><label>Teléfono (opcional)</label><input id="phone">
+<label>Servicios</label>
+<div class="service"><input id="c1" type="checkbox"><div>✂️ Recorte</div><input id="p1" type="number" min="0" step=".01" placeholder="$"></div>
+<div class="service"><input id="c2" type="checkbox"><div>🧔 Barba</div><input id="p2" type="number" min="0" step=".01" placeholder="$"></div>
+<div class="service"><input id="c3" type="checkbox"><div>〰️ Cejas</div><input id="p3" type="number" min="0" step=".01" placeholder="$"></div>
+<label>Notas</label><textarea id="notes"></textarea>
+<div class="actions"><button type="button" id="del" style="display:none;color:#c00">Eliminar</button><button type="button" id="cancel">Cancelar</button><button>Guardar</button></div>
+</form></dialog>
 
 <script>
-const KEY='emas_modern_v1';let data=JSON.parse(localStorage.getItem(KEY)||'null')||{appts:{}};data.settings=data.settings||{prices:{Recorte:0,Barba:0,'Refine de cejas':0},extraName:'Servicio adicional',extraPrice:0};data.settings.prices=data.settings.prices||{Recorte:0,Barba:0,'Refine de cejas':0};let day=new Date(),editing=null;
+const K='emas_red_delete_v1';let data=JSON.parse(localStorage.getItem(K)||'null')||{appts:{}};let day=new Date(),editing=null;
 const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const key=(d,t)=>d+'|'+t;const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
+const key=(d,t)=>d+'|'+t; const save=()=>localStorage.setItem(K,JSON.stringify(data));
 function showtime(t){let[h,m]=t.split(':').map(Number),ap=h<12?'A.M.':'P.M.';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`}
-function total(a){return(a.services||[]).reduce((s,x)=>s+Number(x.price||0),0)}
-function services(a){return(a.services||[]).map(x=>`${x.name} $${Number(x.price||0).toFixed(2)}`).join(' · ')}
-
+function sum(a){return(a.services||[]).reduce((s,x)=>s+Number(x.price||0),0)}
+function past(d,t){let [y,m,da]=d.split('-').map(Number),[h,mi]=t.split(':').map(Number);return new Date(y,m-1,da,h,mi).getTime()<Date.now()}
 function render(){
- dateLabel.textContent=day.toLocaleDateString('es-PR',{weekday:'short',day:'numeric',month:'short'});
- body.innerHTML='';let d=ymd(day);
+ label.textContent=day.toLocaleDateString('es-PR',{weekday:'short',day:'numeric',month:'short'});body.innerHTML='';let d=ymd(day);
  for(let n=300;n<=1130;n+=10){
-   let h=Math.floor(n/60),m=n%60,t=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`,tr=document.createElement('tr'),td1=document.createElement('td'),td2=document.createElement('td'),a=data.appts[key(d,t)];
+   let h=Math.floor(n/60),m=n%60,t=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`,tr=document.createElement('tr'),a=data.appts[key(d,t)],td1=document.createElement('td'),td2=document.createElement('td');
    td1.className='time';td1.textContent=showtime(t);td2.className='slot';
-   if(a)td2.innerHTML=`<div class="appt"><b>${a.client||'Cita'}</b>${services(a)?'<br>'+services(a):''}<br><span class="price">Total $${total(a).toFixed(2)}</span></div>`;
-   td2.onclick=()=>openDlg(d,t);tr.append(td1,td2);body.appendChild(tr);
+   if(a){
+     let cls=past(d,t)?'appt past':'appt';
+     let txt=(a.services||[]).map(s=>s.name+' $'+Number(s.price).toFixed(2)).join(' · ');
+     td2.innerHTML=`<div class="${cls}"><b class="apptName">${a.client||'Cita'}</b>${txt?'<br>'+txt:''}<br><span class="price">Total $${sum(a).toFixed(2)}</span></div>`;
+     td2.querySelector('.apptName').onclick=e=>{e.stopPropagation();if(confirm('¿Borrar esta cita?')){delete data.appts[key(d,t)];save();render();}};
+   }
+   td2.onclick=()=>openDlg(d,t);tr.append(td1,td2);body.appendChild(tr)
  }
  renderSummary();
 }
-function calc(){let s=0;if(recorteCheck.checked)s+=Number(recortePrice.value||0);if(barbaCheck.checked)s+=Number(barbaPrice.value||0);if(cejasCheck.checked)s+=Number(cejasPrice.value||0);if(extraCheck.checked)s+=Number(extraPrice.value||0);apptTotal.textContent=s.toFixed(2)}
-[recorteCheck,barbaCheck,cejasCheck,extraCheck,recortePrice,barbaPrice,cejasPrice,extraPrice].forEach(x=>x.addEventListener('input',calc));
-function openDlg(d,t){
- let k=key(d,t);editing=data.appts[k]?k:null;let a=editing?data.appts[k]:{},map={};(a.services||[]).forEach(s=>map[s.name]=s.price);
- title.textContent=editing?'Editar cita':'Nueva cita';date.value=d;time.value=t;client.value=a.client||'';phone.value=a.phone||'';notes.value=a.notes||'';
- recorteCheck.checked=map['Recorte']!==undefined;barbaCheck.checked=map['Barba']!==undefined;cejasCheck.checked=map['Refine de cejas']!==undefined;extraCheck.checked=map[data.settings.extraName]!==undefined;
- extraLabel.textContent=data.settings.extraName||'Servicio adicional';recortePrice.value=map['Recorte']??data.settings.prices.Recorte??'';barbaPrice.value=map['Barba']??data.settings.prices.Barba??'';cejasPrice.value=map['Refine de cejas']??data.settings.prices['Refine de cejas']??'';extraPrice.value=map[data.settings.extraName]??data.settings.extraPrice??'';delBtn.style.display=editing?'inline-block':'none';calc();dlg.showModal();
-}
-form.onsubmit=e=>{e.preventDefault();let arr=[];if(recorteCheck.checked)arr.push({name:'Recorte',price:Number(recortePrice.value||0)});if(barbaCheck.checked)arr.push({name:'Barba',price:Number(barbaPrice.value||0)});if(cejasCheck.checked)arr.push({name:'Refine de cejas',price:Number(cejasPrice.value||0)});if(extraCheck.checked)arr.push({name:data.settings.extraName||'Servicio adicional',price:Number(extraPrice.value||0)});let nk=key(date.value,time.value);if(editing&&editing!==nk)delete data.appts[editing];data.appts[nk]={client:client.value.trim(),phone:phone.value.trim(),services:arr,notes:notes.value.trim()};save();dlg.close();render()}
-cancelBtn.onclick=()=>dlg.close();delBtn.onclick=()=>{if(editing&&confirm('¿Eliminar esta cita?')){delete data.appts[editing];save();dlg.close();render()}};
-newBtn.onclick=openNew.onclick=()=>openDlg(ymd(day),'09:00');prev.onclick=()=>{day.setDate(day.getDate()-1);render()};next.onclick=()=>{day.setDate(day.getDate()+1);render()};today.onclick=()=>{day=new Date();render()};
-function renderSummary(){let d=ymd(day),es=Object.entries(data.appts).filter(([k])=>k.startsWith(d+'|')),sum=0,c={},money={};['Recorte','Barba','Refine de cejas',data.settings.extraName||'Servicio adicional'].forEach(n=>{c[n]=0;money[n]=0});es.forEach(([k,a])=>{sum+=total(a);(a.services||[]).forEach(s=>{c[s.name]=(c[s.name]||0)+1;money[s.name]=(money[s.name]||0)+Number(s.price||0)})});dayTotal.textContent=sum.toFixed(2);serviceSummary.innerHTML=Object.keys(c).map(s=>`<div class="sumrow"><span>${s} × ${c[s]}</span><b>$${money[s].toFixed(2)}</b></div>`).join('');incomeDetail.innerHTML=es.length?es.map(([k,a])=>`<p><b>${showtime(k.split('|')[1])} ${a.client||'Cita'}</b><br>${services(a)||'Sin servicio'}<br><span class="price">Total $${total(a).toFixed(2)}</span></p>`).join(''):'No hay citas.'}
-
-function loadSettings(){setRecorte.value=data.settings.prices.Recorte||'';setBarba.value=data.settings.prices.Barba||'';setCejas.value=data.settings.prices['Refine de cejas']||'';setExtraName.value=data.settings.extraName||'Servicio adicional';setExtraPrice.value=data.settings.extraPrice||'';}
-saveSettings.onclick=()=>{data.settings.prices.Recorte=Number(setRecorte.value||0);data.settings.prices.Barba=Number(setBarba.value||0);data.settings.prices['Refine de cejas']=Number(setCejas.value||0);data.settings.extraName=setExtraName.value.trim()||'Servicio adicional';data.settings.extraPrice=Number(setExtraPrice.value||0);save();loadSettings();renderSummary();alert('Ajustes guardados');};
-loadSettings();
-
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(b.dataset.view).classList.add('active');
-function loadSettings(){setRecorte.value=data.settings.prices.Recorte||'';setBarba.value=data.settings.prices.Barba||'';setCejas.value=data.settings.prices['Refine de cejas']||'';setExtraName.value=data.settings.extraName||'Servicio adicional';setExtraPrice.value=data.settings.extraPrice||'';}
-saveSettings.onclick=()=>{data.settings.prices.Recorte=Number(setRecorte.value||0);data.settings.prices.Barba=Number(setBarba.value||0);data.settings.prices['Refine de cejas']=Number(setCejas.value||0);data.settings.extraName=setExtraName.value.trim()||'Servicio adicional';data.settings.extraPrice=Number(setExtraPrice.value||0);save();loadSettings();renderSummary();alert('Ajustes guardados');};
-loadSettings();
-
-document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));renderSummary()});
-render();
+function openDlg(d,t){let k=key(d,t);editing=data.appts[k]?k:null;let a=editing?data.appts[k]:{},map={};(a.services||[]).forEach(s=>map[s.name]=s.price);date.value=d;time.value=t;client.value=a.client||'';phone.value=a.phone||'';notes.value=a.notes||'';c1.checked=map.Recorte!==undefined;c2.checked=map.Barba!==undefined;c3.checked=map.Cejas!==undefined;p1.value=map.Recorte??'';p2.value=map.Barba??'';p3.value=map.Cejas??'';del.style.display=editing?'inline-block':'none';dlg.showModal()}
+form.onsubmit=e=>{e.preventDefault();let arr=[];if(c1.checked)arr.push({name:'Recorte',price:Number(p1.value||0)});if(c2.checked)arr.push({name:'Barba',price:Number(p2.value||0)});if(c3.checked)arr.push({name:'Cejas',price:Number(p3.value||0)});let nk=key(date.value,time.value);if(editing&&editing!==nk)delete data.appts[editing];data.appts[nk]={client:client.value.trim(),phone:phone.value.trim(),services:arr,notes:notes.value.trim()};save();dlg.close();render()}
+cancel.onclick=()=>dlg.close();del.onclick=()=>{if(editing&&confirm('¿Eliminar esta cita?')){delete data.appts[editing];save();dlg.close();render()}};
+newBtn.onclick=()=>openDlg(ymd(day),'09:00');prev.onclick=()=>{day.setDate(day.getDate()-1);render()};next.onclick=()=>{day.setDate(day.getDate()+1);render()};today.onclick=()=>{day=new Date();render()};
+function renderSummary(){let d=ymd(day),es=Object.entries(data.appts).filter(([k])=>k.startsWith(d+'|')),s=0;es.forEach(([k,a])=>s+=sum(a));total.textContent=s.toFixed(2);detail.innerHTML=es.length?es.map(([k,a])=>`<p><b>${showtime(k.split('|')[1])} ${a.client||'Cita'}</b> — $${sum(a).toFixed(2)}</p>`).join(''):'No hay citas.'}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(b.dataset.v).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));});
+setInterval(render,60000);render();
 </script></body></html>
