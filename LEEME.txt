@@ -1,1 +1,16 @@
-Las citas pasadas se ponen rojas automáticamente. Toca el nombre de la cita para borrarla con confirmación.
+EMA'S BARBER Web Firebase
+- Diseño moderno blanco/negro.
+- Logo EM✂'S BARBER.
+- Agenda cada 10 minutos por defecto.
+- Citas pasadas en rojo.
+- Borrar tocando el nombre.
+- Precios por servicio y servicios adicionales.
+- Ajustes de horario, precios e intervalo.
+- Sincronización en tiempo real entre iPhone, iPad y computadora con Firestore.
+
+Para GitHub Pages reemplaza:
+index.html
+manifest.webmanifest
+sw.js
+
+Nota: Firestore está abierto sin contraseña según la configuración actual. Más adelante conviene activar Authentication.
