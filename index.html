@@ -66,6 +66,7 @@ dialog{border:0;border-radius:18px;padding:0;width:min(94vw,540px);max-height:92
 <label>✂ Recorte</label><input id="recortePrice" type="number" min="0" step=".01">
 <label>🧔 Barba</label><input id="barbaPrice" type="number" min="0" step=".01">
 <label>〰 Cejas</label><input id="cejasPrice" type="number" min="0" step=".01">
+<label>✦ Refine</label><input id="refinePrice" type="number" min="0" step="0.01" placeholder="Precio">
 <h3>Servicios adicionales</h3><div id="customList"></div><button class="gold" id="addService" type="button">＋ Añadir Servicio</button>
 <div class="macts"><button id="closeSettings" type="button">Cancelar</button><button class="save" id="saveSettings" type="button">Guardar ajustes</button></div>
 </div></dialog>
@@ -86,7 +87,7 @@ measurementId:"G-Z44H3W0Q1Z"
 const app=initializeApp(firebaseConfig),db=getFirestore(app);
 const appointmentsCol=collection(db,"appointments"),settingsRef=doc(db,"settings","main");
 let appointments={},editing=null,day=new Date();
-let settings={open:"05:00",close:"18:50",interval:10,theme:"light",services:[{name:"Recorte",icon:"✂",price:0},{name:"Barba",icon:"🧔",price:0},{name:"Cejas",icon:"〰",price:0}]};
+let settings={open:"05:00",close:"18:50",interval:10,theme:"light",services:[{name:"Recorte",icon:"✂",price:0},{name:"Barba",icon:"🧔",price:0},{name:"Cejas",icon:"〰",price:0},{name:"Refine",icon:"✦",price:0}]};
 const $=id=>document.getElementById(id);
 const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const idFor=(d,t)=>`${d}_${t.replace(":","")}`;
@@ -116,12 +117,26 @@ $("apptForm").onsubmit=async e=>{e.preventDefault();let d=$("dateInput").value,t
 $("delAppt").onclick=async()=>{if(editing&&confirm("¿Eliminar esta cita?")){await deleteDoc(doc(db,"appointments",editing));$("apptDlg").close()}};$("cancelAppt").onclick=()=>$("apptDlg").close();
 $("prev").onclick=()=>{day.setDate(day.getDate()-1);render()};$("next").onclick=()=>{day.setDate(day.getDate()+1);render()};$("today").onclick=()=>{day=new Date();render()};$("newBtn").onclick=()=>openAppt(ymd(day),"09:00");$("menu").onclick=()=>$("side").classList.toggle("open");
 $("light").onclick=async()=>{settings.theme="light";applyTheme();await setDoc(settingsRef,settings)};$("dark").onclick=async()=>{settings.theme="dark";applyTheme();await setDoc(settingsRef,settings)};
-function customServices(){return settings.services.filter(s=>!["Recorte","Barba","Cejas"].includes(s.name))}
-function renderCustom(){$("customList").innerHTML="";customServices().forEach((s,i)=>{let r=document.createElement("div");r.className="custom";r.innerHTML=`<input class="cname" data-i="${i}" value="${s.name}"><input class="cprice" data-i="${i}" type="number" min="0" step=".01" value="${s.price}"><button class="icon rem" data-i="${i}" type="button">×</button>`;$("customList").appendChild(r)});document.querySelectorAll(".rem").forEach(b=>b.onclick=()=>{let fixed=settings.services.filter(s=>["Recorte","Barba","Cejas"].includes(s.name)),c=customServices();c.splice(Number(b.dataset.i),1);settings.services=fixed.concat(c);renderCustom()})}
+function customServices(){return settings.services.filter(s=>!["Recorte","Barba","Cejas","Refine"].includes(s.name))}
+function renderCustom(){$("customList").innerHTML="";customServices().forEach((s,i)=>{let r=document.createElement("div");r.className="custom";r.innerHTML=`<input class="cname" data-i="${i}" value="${s.name}"><input class="cprice" data-i="${i}" type="number" min="0" step=".01" value="${s.price}"><button class="icon rem" data-i="${i}" type="button">×</button>`;$("customList").appendChild(r)});document.querySelectorAll(".rem").forEach(b=>b.onclick=()=>{let fixed=settings.services.filter(s=>["Recorte","Barba","Cejas","Refine"].includes(s.name)),c=customServices();c.splice(Number(b.dataset.i),1);settings.services=fixed.concat(c);renderCustom()})}
 function loadSettings(){$("openTime").value=settings.open;$("closeTime").value=settings.close;$("interval").value=String(settings.interval);$("recortePrice").value=settings.services.find(s=>s.name==="Recorte")?.price||0;$("barbaPrice").value=settings.services.find(s=>s.name==="Barba")?.price||0;$("cejasPrice").value=settings.services.find(s=>s.name==="Cejas")?.price||0;renderCustom()}
 $("gear").onclick=()=>{loadSettings();$("settingsDlg").showModal()};$("closeSettings").onclick=()=>$("settingsDlg").close();$("addService").onclick=()=>{settings.services.push({name:"Servicio adicional",icon:"✦",price:0});renderCustom()};
-$("saveSettings").onclick=async()=>{let c=customServices();document.querySelectorAll(".cname").forEach(x=>{if(c[x.dataset.i])c[x.dataset.i].name=x.value.trim()||"Servicio adicional"});document.querySelectorAll(".cprice").forEach(x=>{if(c[x.dataset.i])c[x.dataset.i].price=Number(x.value||0)});settings.open=$("openTime").value||"05:00";settings.close=$("closeTime").value||"18:50";settings.interval=Number($("interval").value||10);settings.services=[{name:"Recorte",icon:"✂",price:Number($("recortePrice").value||0)},{name:"Barba",icon:"🧔",price:Number($("barbaPrice").value||0)},{name:"Cejas",icon:"〰",price:Number($("cejasPrice").value||0)},...c];await setDoc(settingsRef,settings);$("settingsDlg").close()};
-onSnapshot(settingsRef,s=>{if(s.exists())settings={...settings,...s.data()};applyTheme();renderServices();render();sync(true,"Sincronizado con Firebase")},e=>sync(false,"Error con Firebase"));
+$("saveSettings").onclick=async()=>{let c=customServices();document.querySelectorAll(".cname").forEach(x=>{if(c[x.dataset.i])c[x.dataset.i].name=x.value.trim()||"Servicio adicional"});document.querySelectorAll(".cprice").forEach(x=>{if(c[x.dataset.i])c[x.dataset.i].price=Number(x.value||0)});settings.open=$("openTime").value||"05:00";settings.close=$("closeTime").value||"18:50";settings.interval=Number($("interval").value||10);settings.services=[{name:"Recorte",icon:"✂",price:Number($("recortePrice").value||0)},{name:"Barba",icon:"🧔",price:Number($("barbaPrice").value||0)},{name:"Cejas",icon:"〰",price:Number($("cejasPrice").value||0)},{name:"Refine",icon:"✦",price:Number($("refinePrice")?.value||0)},...c];await setDoc(settingsRef,settings);$("settingsDlg").close()};
+onSnapshot(settingsRef,async s=>{
+  if(s.exists()) settings={...settings,...s.data()};
+  let changed=false;
+  settings.services=(settings.services||[]).flatMap(x=>{
+    if(x.name==="Refine de cejas"){
+      changed=true;
+      return [{...x,name:"Cejas"},{name:"Refine",icon:"✦",price:0}];
+    }
+    return [x];
+  });
+  if(!(settings.services||[]).some(x=>x.name==="Cejas")){settings.services.push({name:"Cejas",icon:"〰",price:0});changed=true;}
+  if(!(settings.services||[]).some(x=>x.name==="Refine")){settings.services.push({name:"Refine",icon:"✦",price:0});changed=true;}
+  if(changed) await setDoc(settingsRef,settings);
+  applyTheme();renderServices();render();sync(true,"Sincronizado con Firebase");
+},e=>sync(false,"Error con Firebase"));
 onSnapshot(appointmentsCol,s=>{appointments={};s.forEach(d=>appointments[d.id]={...d.data(),id:d.id});render();sync(true,"Citas sincronizadas en tiempo real")},e=>sync(false,"No se pudieron cargar las citas"));
 (async()=>{let s=await getDoc(settingsRef);if(!s.exists())await setDoc(settingsRef,settings)})().catch(()=>sync(false,"Revisa las reglas de Firestore"));
 setInterval(render,60000);applyTheme();renderServices();render();

@@ -14,3 +14,7 @@ manifest.webmanifest
 sw.js
 
 Nota: Firestore está abierto sin contraseña según la configuración actual. Más adelante conviene activar Authentication.
+
+- Servicio actualizado: Refine de cejas.
+
+- Servicios separados: Cejas y Refine.
