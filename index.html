@@ -96,6 +96,34 @@ html,body{height:100%;overflow:hidden}
   box-shadow:0 8px 18px rgba(34,197,94,.20);
 }
 .menuCuadreWrap{padding:0 12px 12px}
+
+.mainCuadreBar{padding:0 18px 10px;flex:0 0 auto}
+.mainCuadreBtn{
+  width:100%;
+  border:0;
+  padding:14px 16px;
+  border-radius:14px;
+  font-weight:950;
+  font-size:16px;
+  cursor:pointer;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#fff;
+  box-shadow:0 8px 18px rgba(34,197,94,.22);
+}
+.mainCuadreBtn:active{transform:scale(.99)}
+.cuadreTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.cuadreTabs button{
+  border:1px solid var(--line);
+  background:var(--soft);
+  color:var(--text);
+  border-radius:12px;
+  padding:10px 8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.cuadreTabs button.active{background:linear-gradient(135deg,#f0c866,#d9aa43);color:#111;border-color:#d9aa43}
+.cuadrePeriodTitle{margin-top:10px;font-size:13px;color:var(--muted);font-weight:800}
+
 </style>
 
 </head>
@@ -107,6 +135,10 @@ html,body{height:100%;overflow:hidden}
 <div style="display:flex;gap:8px"><div class="switch"><button id="light" class="active">☀</button><button id="dark">☾</button></div><button class="icon" id="gear">⚙</button></div>
 </header>
 <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Conectando con Firebase…</span></div>
+<div class="mainCuadreBar">
+  <button type="button" id="mainCuadreBtn" class="mainCuadreBtn">💵 Cuadre</button>
+</div>
+
 <main class="layout">
 <aside class="side" id="side">
 <div class="card"><h3>✂ Servicios y Precios</h3><div class="services" id="serviceList"></div></div>
@@ -139,7 +171,7 @@ html,body{height:100%;overflow:hidden}
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
       <div>
         <h2 style="margin:0">Cuadre del día</h2>
-        <div class="cuadreMuted" id="cuadreDate"></div>
+        <div class="cuadreMuted" id="cuadreDate"></div><div class="cuadreTabs"><button type="button" id="cuadreDayTab" class="active">Día</button><button type="button" id="cuadreWeekTab">Semana</button><button type="button" id="cuadreMonthTab">Mes</button></div><div class="cuadrePeriodTitle" id="cuadrePeriodTitle"></div>
       </div>
       <button type="button" class="icon" id="closeCuadre">✕</button>
     </div>
@@ -226,9 +258,58 @@ $("light").onclick=async()=>{settings.theme="light";applyTheme();await setDoc(se
 function customServices(){return settings.services.filter(s=>!["Recorte","Barba","Cejas","Refine"].includes(s.name))}
 function renderCustom(){$("customList").innerHTML="";customServices().forEach((s,i)=>{let r=document.createElement("div");r.className="custom";r.innerHTML=`<input class="cname" data-i="${i}" value="${s.name}"><input class="cprice" data-i="${i}" type="number" min="0" step=".01" value="${s.price}"><button class="icon rem" data-i="${i}" type="button">×</button>`;$("customList").appendChild(r)});document.querySelectorAll(".rem").forEach(b=>b.onclick=()=>{let fixed=settings.services.filter(s=>["Recorte","Barba","Cejas","Refine"].includes(s.name)),c=customServices();c.splice(Number(b.dataset.i),1);settings.services=fixed.concat(c);renderCustom()})}
 
+
+let cuadreMode="day";
+
+function startOfWeek(d){
+  const x=new Date(d);
+  const dayNum=x.getDay(); // Sun 0
+  const diff=(dayNum===0?-6:1-dayNum);
+  x.setDate(x.getDate()+diff);
+  x.setHours(0,0,0,0);
+  return x;
+}
+function endOfWeek(d){
+  const x=startOfWeek(d);
+  x.setDate(x.getDate()+6);
+  x.setHours(23,59,59,999);
+  return x;
+}
+function startOfMonth(d){
+  return new Date(d.getFullYear(),d.getMonth(),1,0,0,0,0);
+}
+function endOfMonth(d){
+  return new Date(d.getFullYear(),d.getMonth()+1,0,23,59,59,999);
+}
+function ymdLocal(d){
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),dd=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${dd}`;
+}
+function getCuadreRange(){
+  const base=new Date(day);
+  if(cuadreMode==="week") return {start:startOfWeek(base),end:endOfWeek(base)};
+  if(cuadreMode==="month") return {start:startOfMonth(base),end:endOfMonth(base)};
+  const d=new Date(base);d.setHours(0,0,0,0);
+  const e=new Date(base);e.setHours(23,59,59,999);
+  return {start:d,end:e};
+}
+function setCuadreMode(mode){
+  cuadreMode=mode;
+  ["day","week","month"].forEach(x=>{
+    const el=$(x==="day"?"cuadreDayTab":x==="week"?"cuadreWeekTab":"cuadreMonthTab");
+    if(el) el.classList.toggle("active",x===mode);
+  });
+  renderCuadre();
+}
 function renderCuadre(){
-  const d=ymd(day);
-  const entries=Object.entries(appts||{}).filter(([k])=>k.startsWith(d+"|")).sort((a,b)=>a[0].localeCompare(b[0]));
+  const range=getCuadreRange();
+  const startKey=ymdLocal(range.start), endKey=ymdLocal(range.end);
+
+  const entries=Object.entries(appts||{}).filter(([k])=>{
+    const datePart=k.split("|")[0];
+    return datePart>=startKey && datePart<=endKey;
+  }).sort((a,b)=>a[0].localeCompare(b[0]));
+
   let total=0;
   const svcCount={};
   entries.forEach(([k,a])=>{
@@ -236,21 +317,43 @@ function renderCuadre(){
     total+=isNaN(price)?0:price;
     (a.services||[]).forEach(s=>svcCount[s]=(svcCount[s]||0)+1);
   });
-  $("cuadreDate").textContent=day.toLocaleDateString("es-PR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+
+  const opts={day:"numeric",month:"short",year:"numeric"};
+  if(cuadreMode==="day"){
+    $("cuadreDate").textContent=day.toLocaleDateString("es-PR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+    $("cuadrePeriodTitle").textContent="Cuadre del día";
+  }else if(cuadreMode==="week"){
+    $("cuadreDate").textContent=`${range.start.toLocaleDateString("es-PR",opts)} – ${range.end.toLocaleDateString("es-PR",opts)}`;
+    $("cuadrePeriodTitle").textContent="Cuadre de la semana";
+  }else{
+    $("cuadreDate").textContent=day.toLocaleDateString("es-PR",{month:"long",year:"numeric"});
+    $("cuadrePeriodTitle").textContent="Cuadre del mes";
+  }
+
   $("cuadreTotal").textContent=total.toFixed(2);
   $("cuadreCount").textContent=entries.length;
-  const services=Object.entries(svcCount);
+
+  const services=Object.entries(svcCount).sort((a,b)=>a[0].localeCompare(b[0]));
   $("cuadreServices").innerHTML=services.length
     ? services.map(([s,n])=>`<div class="cuadreRow"><span>${s}</span><b>${n}</b></div>`).join("")
     : `<div class="cuadreMuted">No hay servicios registrados.</div>`;
+
   $("cuadreDetail").innerHTML=entries.length
     ? entries.map(([k,a])=>{
-        const t=k.split("|")[1];
+        const [datePart,timePart]=k.split("|");
         const price=Number(a.total ?? a.price ?? 0);
-        return `<div class="cuadreRow"><span><b>${showTime(t)}</b> · ${a.client||"Cita"}<br><span class="cuadreMuted">${(a.services||[]).join(", ")||"Sin servicio"}</span></span><b>$${(isNaN(price)?0:price).toFixed(2)}</b></div>`;
+        const when = cuadreMode==="day"
+          ? `<b>${showTime(timePart)}</b>`
+          : `<b>${fmtShortDate(datePart)} · ${showTime(timePart)}</b>`;
+        return `<div class="cuadreRow"><span>${when} · ${a.client||"Cita"}<br><span class="cuadreMuted">${(a.services||[]).join(", ")||"Sin servicio"}</span></span><b>$${(isNaN(price)?0:price).toFixed(2)}</b></div>`;
       }).join("")
-    : `<div class="cuadreMuted">No hay citas para este día.</div>`;
+    : `<div class="cuadreMuted">No hay citas en este período.</div>`;
 }
+function fmtShortDate(v){
+  const [y,m,d]=v.split("-").map(Number);
+  return new Date(y,m-1,d).toLocaleDateString("es-PR",{month:"short",day:"numeric"});
+}
+
 
 function loadSettings(){$("openTime").value=settings.open;$("closeTime").value=settings.close;$("interval").value=String(settings.interval);$("recortePrice").value=settings.services.find(s=>s.name==="Recorte")?.price||0;$("barbaPrice").value=settings.services.find(s=>s.name==="Barba")?.price||0;$("cejasPrice").value=settings.services.find(s=>s.name==="Cejas")?.price||0;renderCustom()}
 $("gear").onclick=()=>{loadSettings();$("settingsDlg").showModal()};$("closeSettings").onclick=()=>$("settingsDlg").close();$("addService").onclick=()=>{settings.services.push({name:"Servicio adicional",icon:"✦",price:0});renderCustom()};
@@ -268,7 +371,13 @@ onSnapshot(settingsRef,async s=>{
   if(!(settings.services||[]).some(x=>x.name==="Cejas")){settings.services.push({name:"Cejas",icon:"〰",price:0});changed=true;}
   if(!(settings.services||[]).some(x=>x.name==="Refine")){settings.services.push({name:"Refine",icon:"✦",price:0});changed=true;}
   if(changed) await setDoc(settingsRef,settings);
-  applyTheme();renderServices();render();if($("cuadreDlg")?.open)renderCuadre();sync(true,"Sincronizado con Firebase");
+  applyTheme();renderServices();
+$("mainCuadreBtn").onclick=()=>{cuadreMode="day";setCuadreMode("day");$("cuadreDlg").showModal()};
+$("cuadreDayTab").onclick=()=>setCuadreMode("day");
+$("cuadreWeekTab").onclick=()=>setCuadreMode("week");
+$("cuadreMonthTab").onclick=()=>setCuadreMode("month");
+
+render();if($("cuadreDlg")?.open)renderCuadre();sync(true,"Sincronizado con Firebase");
 },e=>sync(false,"Error con Firebase"));
 onSnapshot(appointmentsCol,s=>{appointments={};s.forEach(d=>appointments[d.id]={...d.data(),id:d.id});render();sync(true,"Citas sincronizadas en tiempo real")},e=>sync(false,"No se pudieron cargar las citas"));
 (async()=>{let s=await getDoc(settingsRef);if(!s.exists())await setDoc(settingsRef,settings)})().catch(()=>sync(false,"Revisa las reglas de Firestore"));
