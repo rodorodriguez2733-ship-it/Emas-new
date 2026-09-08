@@ -136,7 +136,7 @@ html,body{height:100%;overflow:hidden}
 </header>
 <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Conectando con Firebase…</span></div>
 <div class="mainCuadreBar">
-  <button type="button" id="mainCuadreBtn" class="mainCuadreBtn">💵 Cuadre</button>
+  <button type="button" id="mainCuadreBtn" class="mainCuadreBtn">💵 Cuadre Día / Semana / Mes</button>
 </div>
 
 <main class="layout">
@@ -305,7 +305,7 @@ function renderCuadre(){
   const range=getCuadreRange();
   const startKey=ymdLocal(range.start), endKey=ymdLocal(range.end);
 
-  const entries=Object.entries(appts||{}).filter(([k])=>{
+  const entries=Object.entries(appointments||{}).filter(([k])=>{
     const datePart=k.split("|")[0];
     return datePart>=startKey && datePart<=endKey;
   }).sort((a,b)=>a[0].localeCompare(b[0]));
@@ -313,9 +313,12 @@ function renderCuadre(){
   let total=0;
   const svcCount={};
   entries.forEach(([k,a])=>{
-    const price=Number(a.total ?? a.price ?? 0);
-    total+=isNaN(price)?0:price;
-    (a.services||[]).forEach(s=>svcCount[s]=(svcCount[s]||0)+1);
+    const serviceTotal=(a.services||[]).reduce((sum,s)=>sum+Number(s?.price||0),0);
+    total+=serviceTotal;
+    (a.services||[]).forEach(s=>{
+      const name = typeof s==="string" ? s : (s?.name||"Servicio");
+      svcCount[name]=(svcCount[name]||0)+1;
+    });
   });
 
   const opts={day:"numeric",month:"short",year:"numeric"};
@@ -341,11 +344,11 @@ function renderCuadre(){
   $("cuadreDetail").innerHTML=entries.length
     ? entries.map(([k,a])=>{
         const [datePart,timePart]=k.split("|");
-        const price=Number(a.total ?? a.price ?? 0);
+        const price=(a.services||[]).reduce((sum,s)=>sum+Number(s?.price||0),0);
         const when = cuadreMode==="day"
           ? `<b>${showTime(timePart)}</b>`
           : `<b>${fmtShortDate(datePart)} · ${showTime(timePart)}</b>`;
-        return `<div class="cuadreRow"><span>${when} · ${a.client||"Cita"}<br><span class="cuadreMuted">${(a.services||[]).join(", ")||"Sin servicio"}</span></span><b>$${(isNaN(price)?0:price).toFixed(2)}</b></div>`;
+        return `<div class="cuadreRow"><span>${when} · ${a.client||"Cita"}<br><span class="cuadreMuted">${(a.services||[]).map(s=>typeof s==="string"?s:(s?.name||"Servicio")).join(", ")||"Sin servicio"}</span></span><b>$${(isNaN(price)?0:price).toFixed(2)}</b></div>`;
       }).join("")
     : `<div class="cuadreMuted">No hay citas en este período.</div>`;
 }
@@ -353,6 +356,19 @@ function fmtShortDate(v){
   const [y,m,d]=v.split("-").map(Number);
   return new Date(y,m-1,d).toLocaleDateString("es-PR",{month:"short",day:"numeric"});
 }
+
+function openCuadre(){
+  cuadreMode="day";
+  setCuadreMode("day");
+  const dlg=$("cuadreDlg");
+  if(dlg && !dlg.open) dlg.showModal();
+}
+$("mainCuadreBtn").onclick=openCuadre;
+$("menuCuadreBtn").onclick=()=>{openCuadre();$("side").classList.remove("open")};
+$("cuadreDayTab").onclick=()=>setCuadreMode("day");
+$("cuadreWeekTab").onclick=()=>setCuadreMode("week");
+$("cuadreMonthTab").onclick=()=>setCuadreMode("month");
+$("closeCuadre").onclick=()=>$("cuadreDlg").close();
 
 
 function loadSettings(){$("openTime").value=settings.open;$("closeTime").value=settings.close;$("interval").value=String(settings.interval);$("recortePrice").value=settings.services.find(s=>s.name==="Recorte")?.price||0;$("barbaPrice").value=settings.services.find(s=>s.name==="Barba")?.price||0;$("cejasPrice").value=settings.services.find(s=>s.name==="Cejas")?.price||0;renderCustom()}
@@ -372,11 +388,6 @@ onSnapshot(settingsRef,async s=>{
   if(!(settings.services||[]).some(x=>x.name==="Refine")){settings.services.push({name:"Refine",icon:"✦",price:0});changed=true;}
   if(changed) await setDoc(settingsRef,settings);
   applyTheme();renderServices();
-$("mainCuadreBtn").onclick=()=>{cuadreMode="day";setCuadreMode("day");$("cuadreDlg").showModal()};
-$("cuadreDayTab").onclick=()=>setCuadreMode("day");
-$("cuadreWeekTab").onclick=()=>setCuadreMode("week");
-$("cuadreMonthTab").onclick=()=>setCuadreMode("month");
-
 render();if($("cuadreDlg")?.open)renderCuadre();sync(true,"Sincronizado con Firebase");
 },e=>sync(false,"Error con Firebase"));
 onSnapshot(appointmentsCol,s=>{appointments={};s.forEach(d=>appointments[d.id]={...d.data(),id:d.id});render();sync(true,"Citas sincronizadas en tiempo real")},e=>sync(false,"No se pudieron cargar las citas"));
