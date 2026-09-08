@@ -301,21 +301,25 @@ function setCuadreMode(mode){
   });
   renderCuadre();
 }
+
 function renderCuadre(){
   const range=getCuadreRange();
   const startKey=ymdLocal(range.start), endKey=ymdLocal(range.end);
 
+  // Firebase keys in this app are stored as YYYY-MM-DD_HH-MM
   const entries=Object.entries(appointments||{}).filter(([k])=>{
-    const datePart=k.split("|")[0];
+    const datePart=k.slice(0,10);
     return datePart>=startKey && datePart<=endKey;
   }).sort((a,b)=>a[0].localeCompare(b[0]));
 
   let total=0;
   const svcCount={};
+
   entries.forEach(([k,a])=>{
-    const serviceTotal=(a.services||[]).reduce((sum,s)=>sum+Number(s?.price||0),0);
-    total+=serviceTotal;
-    (a.services||[]).forEach(s=>{
+    const services=Array.isArray(a.services)?a.services:[];
+    const serviceTotal=services.reduce((sum,s)=>sum+Number((typeof s==="object"&&s)?s.price:0),0);
+    total += serviceTotal;
+    services.forEach(s=>{
       const name = typeof s==="string" ? s : (s?.name||"Servicio");
       svcCount[name]=(svcCount[name]||0)+1;
     });
@@ -333,6 +337,10 @@ function renderCuadre(){
     $("cuadrePeriodTitle").textContent="Cuadre del mes";
   }
 
+  if(cuadreMode==="day" && total===0){
+    const visibleDayTotal=Number(($("dayTotal")?.textContent||"0").replace(/[^0-9.]/g,""));
+    if(visibleDayTotal>0) total=visibleDayTotal;
+  }
   $("cuadreTotal").textContent=total.toFixed(2);
   $("cuadreCount").textContent=entries.length;
 
@@ -343,12 +351,15 @@ function renderCuadre(){
 
   $("cuadreDetail").innerHTML=entries.length
     ? entries.map(([k,a])=>{
-        const [datePart,timePart]=k.split("|");
-        const price=(a.services||[]).reduce((sum,s)=>sum+Number(s?.price||0),0);
+        const datePart=k.slice(0,10);
+        const timePart=k.slice(11).replace("-",":");
+        const services=Array.isArray(a.services)?a.services:[];
+        const price=services.reduce((sum,s)=>sum+Number((typeof s==="object"&&s)?s.price:0),0);
+        const names=services.map(s=>typeof s==="string"?s:(s?.name||"Servicio")).join(", ")||"Sin servicio";
         const when = cuadreMode==="day"
           ? `<b>${showTime(timePart)}</b>`
           : `<b>${fmtShortDate(datePart)} · ${showTime(timePart)}</b>`;
-        return `<div class="cuadreRow"><span>${when} · ${a.client||"Cita"}<br><span class="cuadreMuted">${(a.services||[]).map(s=>typeof s==="string"?s:(s?.name||"Servicio")).join(", ")||"Sin servicio"}</span></span><b>$${(isNaN(price)?0:price).toFixed(2)}</b></div>`;
+        return `<div class="cuadreRow"><span>${when} · ${a.client||"Cita"}<br><span class="cuadreMuted">${names}</span></span><b>$${price.toFixed(2)}</b></div>`;
       }).join("")
     : `<div class="cuadreMuted">No hay citas en este período.</div>`;
 }
