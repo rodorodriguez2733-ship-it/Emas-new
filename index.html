@@ -134,7 +134,7 @@ html,body{height:100%;overflow:hidden}
 <div class="logo"><div class="logoMain">EM<span>✂</span>'S</div><div class="logoSub">BARBER</div></div>
 <div style="display:flex;gap:8px"><div class="switch"><button id="light" class="active">☀</button><button id="dark">☾</button></div><button class="icon" id="gear">⚙</button></div>
 </header>
-<div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Conectando con Firebase…</span></div>
+<div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Conectando con Firebase…</span> · <b>EMA FIX SIN PERDER CITAS</b></div>
 <div class="mainCuadreBar">
   <button type="button" id="mainCuadreBtn" class="mainCuadreBtn">💵 Cuadre Día / Semana / Mes</button>
 </div>
@@ -223,7 +223,7 @@ appId:"1:794165974241:web:c6707a0e3f8ab8181953a0",
 measurementId:"G-Z44H3W0Q1Z"
 };
 const app=initializeApp(firebaseConfig),db=getFirestore(app);
-const appointmentsCol=collection(db,"appointments"),settingsRef=doc(db,"settings","main");
+const appointmentsCol=collection(db,"appointments"),settingsRef=doc(db,"settings","ema-main"),legacySettingsRef=doc(db,"settings","main");
 let appointments={},editing=null,day=new Date();
 let settings={open:"05:00",close:"18:50",interval:10,theme:"light",services:[{name:"Recorte",icon:"✂",price:0},{name:"Barba",icon:"🧔",price:0},{name:"Cejas",icon:"〰",price:0},{name:"Refine",icon:"✦",price:0}]};
 const $=id=>document.getElementById(id);
@@ -382,7 +382,7 @@ $("cuadreMonthTab").onclick=()=>setCuadreMode("month");
 $("closeCuadre").onclick=()=>$("cuadreDlg").close();
 
 
-function loadSettings(){$("openTime").value=settings.open;$("closeTime").value=settings.close;$("interval").value=String(settings.interval);$("recortePrice").value=settings.services.find(s=>s.name==="Recorte")?.price||0;$("barbaPrice").value=settings.services.find(s=>s.name==="Barba")?.price||0;$("cejasPrice").value=settings.services.find(s=>s.name==="Cejas")?.price||0;renderCustom()}
+function loadSettings(){$("openTime").value=settings.open;$("closeTime").value=settings.close;$("interval").value=String(settings.interval);$("recortePrice").value=settings.services.find(s=>s.name==="Recorte")?.price||0;$("barbaPrice").value=settings.services.find(s=>s.name==="Barba")?.price||0;$("cejasPrice").value=settings.services.find(s=>s.name==="Cejas")?.price||0;$("refinePrice").value=settings.services.find(s=>s.name==="Refine")?.price||0;renderCustom()}
 $("gear").onclick=()=>{loadSettings();$("settingsDlg").showModal()};$("closeSettings").onclick=()=>$("settingsDlg").close();$("addService").onclick=()=>{settings.services.push({name:"Servicio adicional",icon:"✦",price:0});renderCustom()};
 $("saveSettings").onclick=async()=>{let c=customServices();document.querySelectorAll(".cname").forEach(x=>{if(c[x.dataset.i])c[x.dataset.i].name=x.value.trim()||"Servicio adicional"});document.querySelectorAll(".cprice").forEach(x=>{if(c[x.dataset.i])c[x.dataset.i].price=Number(x.value||0)});settings.open=$("openTime").value||"05:00";settings.close=$("closeTime").value||"18:50";settings.interval=Number($("interval").value||10);settings.services=[{name:"Recorte",icon:"✂",price:Number($("recortePrice").value||0)},{name:"Barba",icon:"🧔",price:Number($("barbaPrice").value||0)},{name:"Cejas",icon:"〰",price:Number($("cejasPrice").value||0)},{name:"Refine",icon:"✦",price:Number($("refinePrice")?.value||0)},...c];await setDoc(settingsRef,settings);$("settingsDlg").close()};
 onSnapshot(settingsRef,async s=>{
@@ -402,7 +402,18 @@ onSnapshot(settingsRef,async s=>{
 render();if($("cuadreDlg")?.open)renderCuadre();sync(true,"Sincronizado con Firebase");
 },e=>sync(false,"Error con Firebase"));
 onSnapshot(appointmentsCol,s=>{appointments={};s.forEach(d=>appointments[d.id]={...d.data(),id:d.id});render();sync(true,"Citas sincronizadas en tiempo real")},e=>sync(false,"No se pudieron cargar las citas"));
-(async()=>{let s=await getDoc(settingsRef);if(!s.exists())await setDoc(settingsRef,settings)})().catch(()=>sync(false,"Revisa las reglas de Firestore"));
+(async()=>{
+  let s=await getDoc(settingsRef);
+  if(!s.exists()){
+    let legacy=await getDoc(legacySettingsRef);
+    if(legacy.exists()){
+      settings={...settings,...legacy.data(),interval:10};
+    }else{
+      settings.interval=10;
+    }
+    await setDoc(settingsRef,settings);
+  }
+})().catch(()=>sync(false,"Revisa las reglas de Firestore"));
 setInterval(render,60000);applyTheme();renderServices();render();
 </script>
 </body></html>
